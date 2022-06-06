@@ -1,0 +1,50 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    aap_receptor_listening_port: 99999
+    aap_db_listening_port: 9999
+    aap_ui_listening_port: 999
+  tasks:
+    - name: Open port "{{ aap_db_listening_port }}" via openssl server on the target system to listen on required socket
+      shell:
+        cmd: timeout 30 openssl s_server -nocert -accept "{{ aap_db_listening_port }}" 2>&1 &
+      when: "'database' in group_names"
+
+    - name: Check connectivity to the listening port "{{ aap_db_listening_port }}" on the target system
+      wait_for:
+        host: "{{ item }}"
+        port: "{{ aap_db_listening_port }}"
+        delay: 1
+        state: drained
+      loop: "{{ groups['database'] }}"
+      when: "'automationcontroller' in group_names"
+
+    - name: Open port "{{ aap_receptor_listening_port }}" via openssl server on the target system to listen on required socket
+      shell:
+        cmd: timeout 30 openssl s_server -nocert -accept "{{ aap_receptor_listening_port }}" 2>&1 &
+      when: "'execution_nodes' in group_names"
+
+    - name: Check connectivity to the listening port "{{ aap_receptor_listening_port }}" on the target system
+      wait_for:
+        host: "{{ item }}"
+        port: "{{ aap_receptor_listening_port }}"
+        delay: 1
+        state: drained
+      loop: "{{ groups['execution_nodes'] }}"
+      when: "'automationcontroller' in group_names"
+
+
+    - name: Open port "{{ aap_ui_listening_port }}" via openssl server on the target system to listen on required socket
+      shell:
+        cmd: timeout 30 openssl s_server -nocert -accept "{{ aap_ui_listening_port }}" 2>&1 &
+      when: "'automationcontroller' in group_names"
+
+    - name: Check connectivity to the listening port "{{ aap_ui_listening_port }}" on the target system
+      wait_for:
+        host: "{{ item }}"
+        port: "{{ aap_ui_listening_port }}"
+        delay: 1
+        state: drained
+      loop: "{{ groups['automationcontroller'] }}"
+      delegate_to: localhost
