@@ -34,7 +34,6 @@
       loop: "{{ groups['execution_nodes'] }}"
       when: "'automationcontroller' in group_names"
 
-
     - name: Open port "{{ aap_ui_listening_port }}" via openssl server on the target system to listen on required socket
       shell:
         cmd: timeout 30 openssl s_server -nocert -accept "{{ aap_ui_listening_port }}" 2>&1 &
