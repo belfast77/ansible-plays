@@ -1,0 +1,9 @@
+- name: Long Running Hello World
+  hosts: all
+  tasks:
+    - name: Shell Countdown
+      shell: for i in `seq "{{ number_of_seconds }}" -1 1` ; do echo -ne "\r$i " ; sleep 1 ; done
+
+    - name: Hello Message
+      debug:
+        msg: "Finally Hello World!"
